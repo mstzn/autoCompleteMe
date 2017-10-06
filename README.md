@@ -8,9 +8,11 @@ For more details -> demo.html
 # Options
 
 ```javascript
+//defaults
+
 var opts = {
-            delimiters: ['@'], 
-            debug: false,
+            delimiters: ['@'], // delimiter to start search
+            debug: false, // a lot of console.log if true
             sensitive: true, // case sensitive
             queryBy: ["name", "username"], // fields to query
             minCharacter: 2, // min character count to search
