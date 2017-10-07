@@ -2,6 +2,8 @@
 Bootstrap 3-4 fully customizable #hashtag, @mention autocomplete extension 
 
 For more details -> demo.html
+or
+Check live demo: http://www.mesutuzun.com/lab/autoCompleteMe/
 
 =======================
 
