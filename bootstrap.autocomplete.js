@@ -31,18 +31,9 @@
                 $(this).remove();
             });
         }, getCursorPosition = function () {
-            var el = $this.get(0);
-            var pos = 0;
-            if ('selectionStart' in el) {
-                pos = el.selectionStart;
-            } else if ('selection' in document) {
-                el.focus();
-                var Sel = document.selection.createRange();
-                var SelLength = document.selection.createRange().text.length;
-                Sel.moveStart('character', -el.value.length);
-                pos = Sel.text.length - SelLength;
-            }
-            return pos;
+            return $this.caret();
+        }, getCursorPositionInPixel = function () {
+            return $this.getCaretPosition();
         }, getNextStop = function () {
             var pos = getCursorPosition();
             var val = $this.val();
@@ -58,27 +49,16 @@
             }
             return -1;
         }, setCaretToPos = function (selectionStart, selectionEnd) {
-            var $elm = $this[0];
-            if ($elm.setSelectionRange) {
-                $elm.focus();
-                $elm.setSelectionRange(selectionStart, selectionEnd);
-            }
-            else if ($elm.createTextRange) {
-                var range = $elm.createTextRange();
-                range.collapse(true);
-                range.moveEnd('character', selectionEnd);
-                range.moveStart('character', selectionStart);
-                range.select();
-            }
+            $this.caret(selectionStart, selectionEnd);
         }, getCompleteItems = function (delimiterIndex, delimiter, itemsToShow) {
             if (itemsToShow.length > 0) {
                 var appendHtml = '';
                 if (itemsToShow.length > 0) {
                     for (item in itemsToShow) {
-                        appendHtml += settings.itemTemplate.replace("{isActive}", (item == 0 ? 'active' : '')).replace('{username}', itemsToShow[item]["username"]).replace("{name}", itemsToShow[item]["name"]).replace("{image}", itemsToShow[item]["image"]).replace("{username_delimiter}", delimiter + itemsToShow[item]["username"]);
+                        appendHtml += settings.itemTemplate.replace("{isActive}", (item == 0 ? 'active' : '')).replace("{name}", itemsToShow[item]["name"]).replace("{image}", itemsToShow[item]["image"]).replace("{username_delimiter}", delimiter + itemsToShow[item]["username"]).replace('{username}', itemsToShow[item]["username"]);
                     }
                 }
-                var $holder = $('<ul class="autoComplete dropdown-menu" style=""></ul>');
+                var $holder = $('<ul class="autoComplete dropdown-menu" style="left:' + (getCursorPositionInPixel().left - 10) + 'px; top:' + (getCursorPositionInPixel().top + 40) + 'px"></ul>');
                 if (settings.dropDownClass != "") {
                     $holder.addClass(settings.dropDownClass);
                 }
@@ -88,14 +68,59 @@
                 });
                 $this.closest("div").append($holder);
                 $this.closest("div").find(".autoComplete").slideDown(100);
+
+
+                $holder.find('.dropdown-item').on('click', function () {
+                    selectAnItem();
+                });
+
             } else {
                 resetComplete();
+            }
+        }, selectAnItem = function () {
+            var pos = getCursorPosition();
+            var t = $this.val();
+            var nextPos = getNextStop();
+            if (nextPos != -1) {
+                delimiterIndex = getDelimiterIndex(pos);
+                var username = $(".autoComplete").find(".dropdown-item.active").data("value") + " ";
+                log("item choosen: " + username);
+                log("choosen delimiterIndex:" + delimiterIndex);
+                log("choosen nextPost: " + nextPos);
+                $this.val(t.substr(0, delimiterIndex) + username + t.substr(nextPos - 1, t.length - nextPos - 1));
+                var curPos = delimiterIndex + username.length;
+                setCaretToPos(curPos, curPos + 1);
+                resetComplete();
+            }
+        }, switchToNext = function () {
+            if ($(".autoComplete").length > 0 && $(".autoComplete").is(":visible")) {
+                if ($(".autoComplete").find(".dropdown-item.active").next().length > 0) {
+                    $(".autoComplete").find(".dropdown-item.active").removeClass("active").next().addClass("active");
+                } else {
+                    $(".autoComplete").find(".dropdown-item.active").removeClass("active");
+                    $(".autoComplete").find(".dropdown-item:first-child").addClass("active");
+                }
+            }
+        }, switchToPrev = function () {
+            if ($(".autoComplete").length > 0 && $(".autoComplete").is(":visible")) {
+                if ($(".autoComplete").find(".dropdown-item.active").prev().length > 0) {
+                    $(".autoComplete").find(".dropdown-item.active").removeClass("active").prev().addClass('active');
+                } else {
+                    $(".autoComplete").find(".dropdown-item.active").removeClass("active");
+                    $(".autoComplete").find(".dropdown-item:last-child").addClass("active");
+                }
             }
         }, log = function (thing) {
             if (settings.debug == true) {
                 console.log(thing);
             }
         };
+
+        $this.on("keydown", function (event) {
+            if (event.which == 13 || event.which == 40 || event.which == 38) {
+                event.preventDefault();
+            }
+        });
 
         $this.on("keyup", function (event) {
             var pos = getCursorPosition();
@@ -111,46 +136,16 @@
             }
             if (event.which == 13) {
                 if ($(".autoComplete").length > 0 && $(".autoComplete").is(":visible")) {
-                    event.preventDefault();
-                    var t = $this.val();
-                    var nextPos = getNextStop();
-                    if (nextPos != -1) {
-                        delimiterIndex = getDelimiterIndex(pos);
-                        var username = $(".autoComplete").find(".dropdown-item.active").data("value");
-                        log("item choosen: " + username);
-                        log("choosen delimiterIndex:" + delimiterIndex);
-                        log("choosen nextPost: " + nextPos);
-                        $this.val(t.substr(0, delimiterIndex) + username + t.substr(nextPos - 1, t.length - nextPos - 1));
-                        var curPos = delimiterIndex + username.length;
-                        setCaretToPos(curPos, curPos);
-                        resetComplete();
-                    }
+                    selectAnItem();
                 }
                 return;
             }
             if (event.which == 40) {
-                if ($(".autoComplete").length > 0 && $(".autoComplete").is(":visible")) {
-                    event.preventDefault();
-                    if ($(".autoComplete").find(".dropdown-item.active").next().length > 0) {
-                        $(".autoComplete").find(".dropdown-item.active").removeClass("active").next().addClass("active");
-                    } else {
-                        $(".autoComplete").find(".dropdown-item.active").removeClass("active");
-                        $(".autoComplete").find(".dropdown-item:first-child").addClass("active");
-                    }
-                }
+                switchToNext();
                 return;
             }
             if (event.which == 38) {
-                if ($(".autoComplete").length > 0 && $(".autoComplete").is(":visible")) {
-                    event.preventDefault();
-
-                    if ($(".autoComplete").find(".dropdown-item.active").prev().length > 0) {
-                        $(".autoComplete").find(".dropdown-item.active").removeClass("active").prev().addClass('active');
-                    } else {
-                        $(".autoComplete").find(".dropdown-item.active").removeClass("active");
-                        $(".autoComplete").find(".dropdown-item:last-child").addClass("active");
-                    }
-                }
+                switchToPrev();
                 return;
             }
 
@@ -169,9 +164,11 @@
                                 if (ajaxProcessing) return;
                                 ajaxProcessing = true;
                                 $.post(settings.asyncAddress, {delimiter: delimiter, query: query}, function (result) {
-                                    getCompleteItems(delimiterIndex, delimiter, result.data);
+                                    getCompleteItems(delimiterIndex, delimiter, result);
                                     ajaxProcessing = false;
-                                }, 'json')
+                                }, 'json').fail(function () {
+                                    ajaxProcessing = false;
+                                })
                             } else {
                                 var itemsToShow = [];
                                 for (idx in settings.staticData) {
