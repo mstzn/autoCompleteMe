@@ -11,7 +11,7 @@
   </head>
   <body>
     <div class="autocomplete-holder">
-    	<textarea class="form-control composer" placeholder="start typing (@... or #... or |...)"></textarea>
+    	<textarea class="form-control composer" placeholder="start typing (@... or #... or |...) --> @Gar"></textarea>
     </div>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -21,13 +21,13 @@
     <script type="text/javascript" src="jquery.caret-1.5.2.min.js"></script>
     <script type="text/javascript" src="jquery.caretposition.min.js"></script>
     <script type="text/javascript" src="bootstrap.autocomplete.js"></script>
-    
 
     <script type="text/javascript">
     	$(document).ready(function(){
             $(".composer").autoCompleteMe({
                 delimiters: ['@', '#', '|'],
                 debug: true,
+                sensitive: false,
                 //asyncAddress: "data.json",
                 queryBy: ["name", "username"],
                 minCharacter: 2,
@@ -40,6 +40,22 @@
                                 "username": "candelario99",
                                 "image": "http://placekitten.com/25/25"
                             }, {
+					            "name": "Garett Watsica 1",
+					            "username": "candelario99",
+					            "image": "http://placekitten.com/25/25"
+					        }, {
+					            "name": "Garett Watsica 2 ",
+					            "username": "candelario99",
+					            "image": "http://placekitten.com/25/25"
+					        }, {
+					            "name": "Garett Watsica 3",
+					            "username": "candelario99",
+					            "image": "http://placekitten.com/25/25"
+					        }, {
+					            "name": "Garett Watsica 4",
+					            "username": "candelario99",
+					            "image": "http://placekitten.com/25/25"
+					        }, {
                                 "name": "Loyal Labadie",
                                 "username": "emelie.watsica",
                                 "image": "http://placekitten.com/25/25"
